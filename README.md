@@ -14,9 +14,9 @@ DeepSeek Harness (DSH) 插件：把一个安卓项目文件夹直接构建成 AP
 - **非 ASCII 路径自动处理**：当工程或 SDK 目录路径含有非 ASCII 字符（例如中文路径，AAPT2 在 Windows 上会因此无法读取 `android.jar`）时，自动把工程和 SDK 复制到一个可用的 ASCII 临时目录（`%TEMP%\dsh-android-build`）里构建，再把 APK 复制回你的输出文件夹。staged SDK 会缓存复用，不重复下载。
 - 所有下载、Gradle 发行版、依赖缓存（`GRADLE_USER_HOME`）都放在下载文件夹里，默认是**会话工作目录下的 `.android-build`**。
 
-## 安装
-
-在 DSH 宿主机器上（需要 `pnpm` 在 PATH 上）。把 `<插件路径>` 换成这个 tarball 在你机器上的实际位置：
+## 安装(二选一)
+1.(最简单)打开DSH，让ai帮你装：帮我安装这个DSH插件：https://github.com/memories-coder/DSH-plugin-android-apk.git
+2.(省token，动手能力强)在 DSH 宿主机器上（需要 `pnpm` 在 PATH 上）。把 `<插件路径>` 换成这个 tarball 在你机器上的实际位置：
 
 ```bash
 dsh plugin --profile web add "<插件路径>/DSH-plugin-android-apk-main"
@@ -29,7 +29,7 @@ dsh plugin --profile web add "<插件路径>/DSH-plugin-android-apk-main"
 > 有问题随时提issues
 ## 使用
 
-装好后，直接对 Agent 说“把 `xxx` 文件夹构建成 APK”，或显式调用工具：
+装好后，直接对DSH说“把 `xxx` 文件夹构建成 APK”，或显式调用工具：
 
 ```
 build_android_apk(project="myapp", variant="debug", clean=false)

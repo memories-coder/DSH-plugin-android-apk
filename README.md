@@ -16,6 +16,7 @@ DeepSeek Harness (DSH) 插件：把一个安卓项目文件夹直接构建成 AP
 
 ## 安装(二选一)
 1.(最简单)打开DSH，让ai帮你装：帮我安装这个DSH插件：https://github.com/memories-coder/DSH-plugin-android-apk.git
+
 2.(省token，动手能力强)在 DSH 宿主机器上（需要 `pnpm` 在 PATH 上）。把 `<插件路径>` 换成这个 tarball 在你机器上的实际位置：
 
 ```bash

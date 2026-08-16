@@ -19,7 +19,7 @@ DeepSeek Harness (DSH) 插件：把一个安卓项目文件夹直接构建成 AP
 在 DSH 宿主机器上（需要 `pnpm` 在 PATH 上）。把 `<插件路径>` 换成这个 tarball 在你机器上的实际位置：
 
 ```bash
-dsh plugin --profile web add "<插件路径>/dsh-plugin-android-apk-0.1.0.tgz"
+dsh plugin --profile web add "<插件路径>/DSH-plugin-android-apk-main"
 ```
 
 > 说明：`dsh plugin` 实际是在 profile 目录里执行 `pnpm add <spec>`，然后把声明了

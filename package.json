@@ -1,6 +1,6 @@
 {
   "name": "dsh-plugin-android-apk",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "DSH bundle plugin: build an Android project folder into an APK. Missing toolchain pieces (JDK / Android SDK cmdline-tools / Gradle) are downloaded into the workspace folder automatically.",
   "type": "module",
   "main": "lib/index.js",
@@ -20,9 +20,9 @@
       "patch": "./cordis.patch.yml"
     }
   },
-  "dependencies": {
+  "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.1",
-    "@deepseek-ai/dsh-tools": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-tools": ">=0.1.0-rc.6 <2",
     "@deepseek-ai/schemastery": "^3.18.1"
   }
 }

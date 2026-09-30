@@ -21,13 +21,19 @@ DeepSeek Harness (DSH) 插件：把一个安卓项目文件夹直接构建成 AP
 在 DSH 宿主机器上（需要 `pnpm` 在 PATH 上）。把 `<插件路径>` 换成这个 tarball 在你机器上的实际位置：
 
 ```bash
-dsh plugin --profile web add "<插件路径>/dsh-plugin-android-apk-0.2.0.tgz"
+dsh plugin --profile web add "<插件路径>/dsh-plugin-android-apk-0.2.1.tgz"
 ```
 
 > 说明：`dsh plugin` 实际是在 profile 目录里执行 `pnpm add <spec>`，然后把声明了
 > `dsh.bundle.patch` 的包加入 `dsh.profile.bundles` 层。手动操作等价于：
 > 在 `~/.dsh/profiles/web` 执行 `pnpm add <spec>`，再把包名加进
 > `package.json` 的 `dsh.profile.bundles`。
+
+> ⚠️ **依赖声明为 `peerDependencies`（0.2.1 起）**：`@deepseek-ai/cordis` /
+> `@deepseek-ai/dsh-tools` / `@deepseek-ai/schemastery` 由 DSH 宿主提供并做解析拦截，
+> 插件**不能**自己装一份——否则 profile 里的旧副本会遮蔽宿主自己的 `tools` 行，导致
+> `1 required plugin did not activate`、桌面端无法启动。请不要在 profile 里手动
+> `pnpm add` 这三个包。
 
 ## 使用
 
@@ -71,6 +77,17 @@ config:
 网络受限（如国内直连 Google 不稳）时，插件会自动尝试回退镜像；也可以先用代理保证
 `dl.google.com` / `services.gradle.org` / `api.adoptium.net` 可达。
 
+**下载完整性校验**：拿得到上游官方摘要时会逐个比对，不匹配的镜像直接跳过并换下一个——
+
+| 组件 | 校验来源 | 算法 |
+| --- | --- | --- |
+| JDK (Temurin) | Adoptium assets API 的 `checksum`（清华镜像为 `<归档>.sha256.txt`） | SHA-256 |
+| Gradle | `<发行版>.sha256`（与 zip 同目录） | SHA-256 |
+| Android cmdline-tools | Google `repository2-*.xml` 里的 `<checksum>` | SHA-1 / SHA-256 |
+
+摘要源拿不到（镜像未提供、`dl.google.com` 不可达）时跳过校验、照常下载，不会阻塞构建；
+校验通过会在 `logTail` 里打印 `[dl] … checksum verified …`。
+
 ## 目录结构
 
 安装包（tarball）内包含：
@@ -82,7 +99,8 @@ package/
 ├── lib/
 │   ├── index.js        # Cordis 插件入口 + build_android_apk 工具定义
 │   ├── build.js        # 构建编排（检测/下载/ASCII staging/assemble/复制 APK）
-│   └── download.js     # 下载/解压/镜像回退助手（仅用 Node 内置模块）
+│   └── download.js     # 下载/解压/镜像回退/校验助手（仅用 Node 内置模块）
+├── CHANGELOG.md
 └── README.md
 ```
 
@@ -91,6 +109,15 @@ package/
 ## 常见问题
 
 - **构建失败 / 工具没出现**：安装后必须重启 DSH；`dsh plugin` 需要 `pnpm` 在 PATH。
+- **工具报 `userRender is not a function` / 注册失败 / 输出被拒**：DSH 要求每个工具声明
+ `output.render`（一个返回 `[{ type: "text", text }]` 数组的函数）。本插件自 0.2.1 起已内置；
+ 若你看到该错误，说明装的是旧版本，**升级到 ≥0.2.1**。同理 `apks[]` 的 `staged` 字段也已在
+ `output.schema` 中声明（`additionalProperties: false` 下缺字段会导致 `INVALID_TOOL_OUTPUT`）。
+- **装完 DSH 起不来（`1 required plugin did not activate` / `tools failed to import`）**：
+  这是 0.2.0 及以前把 `@deepseek-ai/*` 写成 `dependencies` 导致的——pnpm 会往 profile 装一份
+  旧的 `dsh-tools`，遮蔽宿主自己的 `tools` 行。**升级到 ≥0.2.1**（已改为 `peerDependencies`），
+  并删除 profile 里的残留副本
+  `~/.dsh/profiles/<profile>/node_modules/@deepseek-ai/dsh-tools`。
 - **工程路径含中文/非 ASCII**：插件会自动 staging 到 ASCII 临时目录构建（并给 `gradle.properties`
   加 `android.overridePathCheck=true`），无需手动处理；staged SDK 会缓存复用，APK 仍复制回你的输出文件夹。
 - **依赖下载超时**：Gradle 依赖（AGP、AndroidX）从 `dl.google.com` 拉取，网络不稳时可能超时；
@@ -100,4 +127,9 @@ package/
 - **build-tools 版本不匹配**：插件从 `sdkmanager --list` 里挑与 compileSdk 同大版本的最新
   build-tools；可传 `compileSdk` 覆盖检测结果。
 - **老工程需要 JDK 8/11**：插件会先探测工程里的 AGP / Gradle 版本来推断所需 JDK（AGP 8、Gradle 8 → 17；否则 11）：系统 JDK 满足就直接用，不满足才下载，且下载版本不会低于该要求（`jdkMajor` 只在需要下载时生效）。需要 JDK 8 的老工程请自行配好 `JAVA_HOME`（插件最低要求 Java 11）。
-- **非 Windows 宿主**：插件同样可用（gradlew/gradle 脚本 + tar 解压 + Expand-Archive 回退）。
+- **非 Windows / Linux / Termux 宿主**：构建路径已平台化，非 Windows 下 Java 用 `java`（`which` 定位）、
+ sdkmanager 用 `sdkmanager` 脚本（自动 `chmod +x`）、Gradle 用 `gradlew`/`gradle`，下载按
+ 平台取 Adoptium 三元组（Linux/macOS 为 `.tar.gz`），解压回退链为 `unzip → python3 -m zipfile → tar`。
+ 社区已在 **Termux (aarch64, Android 15)** 上端到端跑通：`ok: true`、产出真实 APK（含
+ `classes.dex` / `AndroidManifest.xml` 等）。注意该实测用的是**预装**的 JDK 21 + SDK 34.0.4，
+ Linux 上"从零下载 SDK"那条路径未被该次实测覆盖。

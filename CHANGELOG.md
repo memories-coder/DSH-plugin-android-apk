@@ -35,13 +35,6 @@ Release ledger (tarball names + SHA-256): [`RELEASES.txt`](RELEASES.txt).
 - Tool description, parameter description, config comment, the package
   `description` field and the README were updated for the new default location.
 
-### Added
-
-- `test/download-dir.test.mjs` — verifies the plugin-root default, that it is
-  absolute and inside the package, that relative and absolute `downloadDir`
-  overrides are honoured, that `config.downloadRoot` is respected, and that the
-  tool argument wins over the config value.
-
 ## [0.2.3] - 2026-10-01
 
 ### Fixed
@@ -69,25 +62,13 @@ Release ledger (tarball names + SHA-256): [`RELEASES.txt`](RELEASES.txt).
   `ia32` while Adoptium names that architecture `x86`, so the JDK URL 404'd.
   Added the `ia32 → x86` mapping.
 
-### Added
-
-- `test/jdk-version-fallback.test.mjs` — offline tests for the ladder: fallback
-  when the requested release is missing, **no** fallback when it exists,
-  requested release preserved when the API is unreachable, mirror candidate still
-  discovered while the API is down, and the `ia32 → x86` mapping.
-- `test/platform-matrix.mjs` — resolves the toolchain URLs for six
-  platform/arch combinations (by overriding `process.platform` / `process.arch`)
-  and live-probes the Adoptium API, so platform coverage can be re-verified
-  after any change without owning the machines.
-
 ### Verified
 
 - Live Adoptium resolution for requested JDK 17: `win32/x64`, `linux/x64`,
   `linux/arm64`, `darwin/x64`, `darwin/arm64` → **17 as requested**;
   `win32/arm64` → **21 (fallback)**. Every resolved artifact and all three
   `commandlinetools-{win,linux,mac}` archives answered successfully.
-- Windows x64 build still passes end-to-end (see 0.2.2), and both test suites
-  pass (`progress-throttle` 9 assertions, `jdk-version-fallback` 13 assertions).
+- Windows x64 build still passes end-to-end (see 0.2.2).
 
 ## [0.2.2] - 2026-10-01
 
@@ -112,13 +93,6 @@ Found by the first real end-to-end build (a from-scratch toolchain provision of
 
 ### Added
 
-- `test/progress-throttle.test.mjs` — offline regression test for both bugs
-  above (throttling, single closing line, no listener leak, download contract).
-- `test/run-build.mjs` — headless driver that runs the plugin's own `buildApk`
-  outside DSH, so the real build path can be exercised without a DSH restart.
-- `test/` — a minimal Android project (single Activity, framework-only, no
-  AndroidX) that exercises resources + AAPT2, the ASCII staging path, and the
-  SDK/build-tools selection.
 - `RELEASES.txt` — release ledger and the maintenance rules for this package.
 
 ### Changed
@@ -126,7 +100,7 @@ Found by the first real end-to-end build (a from-scratch toolchain provision of
 - `README.md` install section now uses `--profile <profile>` instead of a
   hard-coded `web`, with notes on finding the active profile and on installing
   once per profile (the plugin is a profile-level dependency).
-- `progressLogger` is exported for testing.
+- `progressLogger` is now exported.
 
 ## [0.2.1] - 2026-10-01
 

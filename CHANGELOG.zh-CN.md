@@ -28,12 +28,6 @@
 - 工具描述、参数说明、配置注释、`package.json` 的 `description` 字段与 README
   均按新的默认位置做了更新。
 
-### 新增
-
-- `test/download-dir.test.mjs`——验证：默认值为插件根目录下的路径、且是绝对路径并位于
-  包内；相对与绝对的 `downloadDir` 覆盖都生效；`config.downloadRoot` 被尊重；
-  工具参数优先于配置值。
-
 ## [0.2.3] - 2026-10-01
 
 ### 修复
@@ -56,22 +50,12 @@
 - **32 位 x86 解析成了 Adoptium 不存在的架构名。** `process.arch` 报 `ia32`，
   而 Adoptium 把该架构命名为 `x86`，导致 JDK 地址 404。已补上 `ia32 → x86` 映射。
 
-### 新增
-
-- `test/jdk-version-fallback.test.mjs`——阶梯逻辑的离线测试：请求版本缺失时回退；
-  请求版本存在时**不**回退；API 不可达时保留请求版本；API 挂掉时仍能发现镜像候选；
-  以及 `ia32 → x86` 映射。
-- `test/platform-matrix.mjs`——覆盖六种平台/架构组合（通过覆写 `process.platform` /
-  `process.arch`）解析工具链地址，并对 Adoptium API 做真实探测，因此无需拥有那些机器
-  也能在每次改动后复验平台覆盖。
-
 ### 验证
 
 - 请求 JDK 17 的真实 Adoptium 解析结果：`win32/x64`、`linux/x64`、`linux/arm64`、
   `darwin/x64`、`darwin/arm64` → **按请求得到 17**；`win32/arm64` → **21（回退）**。
   解析出的每个产物、以及三个 `commandlinetools-{win,linux,mac}` 归档均探测成功。
-- Windows x64 端到端构建仍然通过（见 0.2.2），两套测试全过
-  （`progress-throttle` 9 条断言、`jdk-version-fallback` 13 条断言）。
+- Windows x64 端到端构建仍然通过（见 0.2.2）。
 
 ## [0.2.2] - 2026-10-01
 
@@ -93,12 +77,6 @@ Gradle 8.9）发现。
 
 ### 新增
 
-- `test/progress-throttle.test.mjs`——针对上述两个 bug 的离线回归测试
-  （节流、唯一收尾行、无监听器泄漏、下载契约）。
-- `test/run-build.mjs`——无头驱动脚本，在 DSH 之外直接运行插件自己的 `buildApk`，
-  因此无需重启 DSH 就能跑真实构建路径。
-- `test/`——一个最小 Android 工程（单 Activity、仅用系统框架、无 AndroidX），
-  用于压测资源 + AAPT2、ASCII staging 路径、以及 SDK/build-tools 的选择。
 - `RELEASES.txt`——发布台账与本包的维护约定。
 
 ### 变更
@@ -106,7 +84,7 @@ Gradle 8.9）发现。
 - `README.md` 的安装章节改用 `--profile <profile>` 占位，不再写死 `web`；
   并补充了如何找到当前 profile、以及"每个 profile 各装一次"的说明
   （插件属于 profile 级依赖）。
-- `progressLogger` 改为导出，以便测试。
+- `progressLogger` 改为导出。
 
 ## [0.2.1] - 2026-10-01
 
